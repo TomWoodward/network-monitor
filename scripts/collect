@@ -3,5 +3,13 @@ set -euo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-file="$SCRIPT_DIR/../reports-collected/$(date +%Y-%m-%dT%H:%M:%S%z).xml"
-nmap -R --script smb-os-discovery -oX "$file" -sn 10.0.0.* 8.8.8.8
+year=$(date +%Y)
+month=$(date +%m)
+day=$(date +%d)
+
+dir="$SCRIPT_DIR/../reports-collected/$year/$month/$day"
+
+mkdir -p "$dir"
+
+file="$dir/$(date +T%H-%M-%S%z).xml"
+nmap -R -oX "$file" -v0 -sn 10.0.0.* 8.8.8.8
