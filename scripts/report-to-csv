@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+file="$SCRIPT_DIR/../reports-collected/$1"
+
+xmlstarlet sel -e utf-8 -t \
+  -o "ip,mac,vendor,srtt,rttvar,to" -n \
+  -m //nmaprun/host \
+  -o "\"" \
+  -v $"str:replace(normalize-space(address[@addrtype=\"ipv4\"]/@addr), '\"', '\"\"')" -o "\",\"" \
+  -v $"str:replace(normalize-space(address[@addrtype=\"mac\"]/@addr), '\"', '\"\"')" -o "\",\"" \
+  -v $"str:replace(normalize-space(address[@addrtype=\"mac\"]/@vendor), '\"', '\"\"')" -o "\",\"" \
+  -v $"str:replace(normalize-space(times/@srtt), '\"', '\"\"')" -o "\",\"" \
+  -v $"str:replace(normalize-space(times/@rttvar), '\"', '\"\"')" -o "\",\"" \
+  -v $"str:replace(normalize-space(times/@to), '\"', '\"\"')" -o "\"" \
+  -n "$file" 

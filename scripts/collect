@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+file="$SCRIPT_DIR/../reports-collected/$(date +%Y-%m-%dT%H:%M:%S%z).xml"
+nmap -R --script smb-os-discovery -oX "$file" -sn 10.0.0.* 8.8.8.8
