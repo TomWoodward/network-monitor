@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+PROJECT_DIR=$( dirname "$SCRIPT_DIR" )
+
+[ "$(whoami)" = root ] || (echo "the daemon needs to be installed and run as root to get extra network details". && exit 1)
+
+serviceName="com.network-monitor.daemon.plist"
+installDir="/Library/LaunchDaemons"
+installFile="$installDir/$serviceName"
+
+cat << EOF > "$installFile"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.network-monitor.daemon.plist</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StartInterval</key>
+    <integer>300</integer>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PATH</key>
+      <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin</string>
+    </dict>
+
+    <key>StandardErrorPath</key>
+    <string>$PROJECT_DIR/logs/stderr.log</string>
+
+    <key>StandardOutPath</key>
+    <string>$PROJECT_DIR/logs/stdout.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>$PROJECT_DIR</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>./scripts/collect</string>
+    </array>
+  </dict>
+</plist>
+EOF
+
+if launchctl list | grep -q "$serviceName"; then
+  launchctl unload "$installFile"
+fi
+launchctl load -w "$installFile"
