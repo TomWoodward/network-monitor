@@ -5,14 +5,18 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 file="$SCRIPT_DIR/../reports-collected/$1"
 
+timestamp=$(xmlstarlet sel -e utf-8 -t -v "//finished/@time" -n "$file")
+date=$(date  -r "$timestamp"  +"%Y-%m-%dT%H:%M:%S%z")
+
 xmlstarlet sel -e utf-8 -t \
-  -o "ip,mac,vendor,srtt,rttvar,to" -n \
+  -o "ip,mac,hostname,vendor,srtt,rttvar,to" -n \
   -m //nmaprun/host \
-  -o "\"" \
+  -o "\"$date\",\"" \
   -v $"str:replace(normalize-space(address[@addrtype=\"ipv4\"]/@addr), '\"', '\"\"')" -o "\",\"" \
   -v $"str:replace(normalize-space(address[@addrtype=\"mac\"]/@addr), '\"', '\"\"')" -o "\",\"" \
+  -v $"str:replace(normalize-space(hostnames/hostname/@name), '\"', '\"\"')" -o "\",\"" \
   -v $"str:replace(normalize-space(address[@addrtype=\"mac\"]/@vendor), '\"', '\"\"')" -o "\",\"" \
   -v $"str:replace(normalize-space(times/@srtt), '\"', '\"\"')" -o "\",\"" \
   -v $"str:replace(normalize-space(times/@rttvar), '\"', '\"\"')" -o "\",\"" \
   -v $"str:replace(normalize-space(times/@to), '\"', '\"\"')" -o "\"" \
-  -n "$file" 
+  -n "$file"

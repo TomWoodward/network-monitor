@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+"$SCRIPT_DIR"/run-sql "
+CREATE TABLE IF NOT EXISTS scan_records (
+  \"scanned_at\" timestamp NOT NULL,
+  \"ip\" varchar(16) NOT NULL,
+  \"mac\" varchar(32),
+  \"hostname\" varchar(128),
+  \"vendor\" varchar(128),
+  \"srtt\" INT,
+  \"rttvar\" INT,
+  \"to\" INT,
+  PRIMARY KEY (scanned_at, ip)
+);
+"
