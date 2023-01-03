@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-file="$SCRIPT_DIR/../reports-collected/$1"
+file="$1"
 
 timestamp=$(xmlstarlet sel -e utf-8 -t -v "//finished/@time" -n "$file")
 date=$(date  -r "$timestamp"  +"%Y-%m-%dT%H:%M:%S%z")

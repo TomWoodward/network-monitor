@@ -2,17 +2,22 @@
 set -euo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-dir="$SCRIPT_DIR/../reports-collected"
 
-cd "$dir"
-files=$(find . -name '*.xml' | sed 's/^.\///')
+dir="$1"
 
-for file in $files; do
-  "$SCRIPT_DIR"/report-to-csv "$file" | "$SCRIPT_DIR"/run-sql "
-  BEGIN;
-  CREATE TEMP TABLE tmp_table (LIKE scan_records INCLUDING DEFAULTS) ON COMMIT DROP;
-  copy tmp_table from stdin with (format csv, header, FORCE_NULL (\"srtt\", \"rttvar\", \"to\"));
-  INSERT INTO scan_records SELECT * FROM tmp_table ON CONFLICT DO NOTHING;
-  COMMIT;
-  "
+for file in "$dir"/*; do
+
+  if [ -d "$file" ]; then
+    "$SCRIPT_DIR"/load "$file"
+  else 
+    echo "$file"
+
+    "$SCRIPT_DIR"/report-to-csv "$file" | "$SCRIPT_DIR"/run-sql "
+    BEGIN;
+    CREATE TEMP TABLE tmp_table (LIKE scan_records INCLUDING DEFAULTS) ON COMMIT DROP;
+    copy tmp_table from stdin with (format csv, header, FORCE_NULL (\"srtt\", \"rttvar\", \"to\"));
+    INSERT INTO scan_records SELECT * FROM tmp_table ON CONFLICT DO NOTHING;
+    COMMIT;
+    "
+  fi
 done
