@@ -4,8 +4,14 @@ set -euo pipefail
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 "$SCRIPT_DIR"/run-sql "
+
+CREATE TABLE IF NOT EXISTS scans (
+  \"id\" serial primary key,
+  \"scanned_at\" timestamp with time zone UNIQUE NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS scan_records (
-  \"scanned_at\" timestamp with time zone NOT NULL,
+  \"scan_id\" integer references scans,
   \"ip\" varchar(16) NOT NULL,
   \"mac\" varchar(32),
   \"hostname\" varchar(128),
@@ -13,6 +19,6 @@ CREATE TABLE IF NOT EXISTS scan_records (
   \"srtt\" INT,
   \"rttvar\" INT,
   \"to\" INT,
-  PRIMARY KEY (scanned_at, ip)
+  PRIMARY KEY (scan_id, ip)
 );
 "

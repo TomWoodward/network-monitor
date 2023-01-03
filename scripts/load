@@ -5,6 +5,8 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 dir="$1"
 
+reportFields="\"ip\", \"mac\", \"hostname\", \"vendor\", \"srtt\", \"rttvar\", \"to\""
+
 for file in "$dir"/*; do
 
   if [ -d "$file" ]; then
@@ -14,9 +16,14 @@ for file in "$dir"/*; do
 
     "$SCRIPT_DIR"/report-to-csv "$file" | "$SCRIPT_DIR"/run-sql "
     BEGIN;
-    CREATE TEMP TABLE tmp_table (LIKE scan_records INCLUDING DEFAULTS) ON COMMIT DROP;
+
+    create temp table tmp_table on commit drop as select scans.scanned_at, $reportFields from scans join scan_records on scans.id = scan_records.scan_id where false;
+    
     copy tmp_table from stdin with (format csv, header, FORCE_NULL (\"srtt\", \"rttvar\", \"to\"));
-    INSERT INTO scan_records SELECT * FROM tmp_table ON CONFLICT DO NOTHING;
+
+    insert into scans (scanned_at) select distinct scanned_at from tmp_table ON CONFLICT DO NOTHING;
+    insert into scan_records select scans.id as \"scan_id\", $reportFields from tmp_table join scans using (scanned_at) ON CONFLICT DO NOTHING; 
+
     COMMIT;
     "
   fi
