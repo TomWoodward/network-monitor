@@ -1,15 +1,33 @@
 
 
 -- all hosts
-select distinct case when hostname != '' then hostname when vendor != '' and mac != '' then concat(vendor, ' (', mac, ')') when mac != '' then mac else 'unkown host' end from scan_records;
+select distinct
+  case
+    when hostname != '' then hostname
+    when device_name is not null and vendor != '' and scan_records.mac != '' then concat(device_name, ' (', vendor, ' ', scan_records.mac, ')')
+    when vendor != '' and scan_records.mac != '' then concat(vendor, ' (', scan_records.mac, ')')
+    when device_name is not null and scan_records.mac != '' then concat(device_name, ' (', scan_records.mac, ')')
+    when scan_records.mac != '' then scan_records.mac
+    else 'unkown host'
+  end
+from scan_records
+  left join device_names on scan_records.mac = device_names.mac;
 
 
 -- all hosts by scan with host status, only when the status changes
 with scan_records_plus_host_string as (
   select 
-    case when hostname != '' then hostname when vendor != '' and mac != '' then concat(vendor, ' (', mac, ')') when mac != '' then mac else 'unkown host' end as host,
+    case
+      when hostname != '' then hostname
+      when device_name is not null and vendor != '' and scan_records.mac != '' then concat(device_name, ' (', vendor, ' ', scan_records.mac, ')')
+      when vendor != '' and scan_records.mac != '' then concat(vendor, ' (', scan_records.mac, ')')
+      when device_name is not null and scan_records.mac != '' then concat(device_name, ' (', scan_records.mac, ')')
+      when scan_records.mac != '' then scan_records.mac
+      else 'unkown host'
+    end as host,
     scan_records.*
   from scan_records
+    left join device_names on scan_records.mac = device_names.mac
 ), 
 distinct_hosts as (
   select host, min(scanned_at) as first_seen from scan_records_plus_host_string join scans on scans.id = scan_records_plus_host_string.scan_id group by host

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+"$SCRIPT_DIR"/run-sql "
+BEGIN;
+
+create temp table tmp_table (like device_names including defaults) on commit drop;
+
+copy tmp_table from stdin with (format csv, header);
+
+insert into device_names select * from tmp_table ON CONFLICT DO NOTHING; 
+
+COMMIT;
+" < "$1"
+

@@ -10,6 +10,11 @@ CREATE TABLE IF NOT EXISTS scans (
   \"scanned_at\" timestamp with time zone UNIQUE NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS device_names (
+  \"mac\" varchar(32) primary key,
+  \"device_name\" varchar(128)
+);
+
 CREATE TABLE IF NOT EXISTS scan_records (
   \"scan_id\" integer references scans,
   \"ip\" varchar(16) NOT NULL,

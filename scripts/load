@@ -3,13 +3,18 @@ set -euo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-dir="$1"
+projectDir=$(dirname "$SCRIPT_DIR")
+
+input="${1-"$projectDir/reports-collected"}"
+dir="${input%/}"
 
 reportFields="\"ip\", \"mac\", \"hostname\", \"vendor\", \"srtt\", \"rttvar\", \"to\""
 
 for file in "$dir"/*; do
 
-  if [ -d "$file" ]; then
+  if [ "$file" = "$dir/*" ]; then
+    rm -r "$dir"
+  elif [ -d "$file" ]; then
     "$SCRIPT_DIR"/load "$file"
   else 
     echo "$file"
@@ -26,5 +31,9 @@ for file in "$dir"/*; do
 
     COMMIT;
     "
+
+    target="${file/reports-collected/reports-loaded}"
+    mkdir -p "$(dirname "$target")"
+    mv "$file" "$target"
   fi
 done

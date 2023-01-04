@@ -13,3 +13,5 @@ mkdir -p "$dir"
 
 file="$dir/$(date +T%H-%M-%S%z).xml"
 nmap -R -oX "$file" -v0 -sn 10.0.0.* 8.8.8.8
+
+chmod -R a+rwx "$SCRIPT_DIR/../reports-collected"
