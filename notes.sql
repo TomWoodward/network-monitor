@@ -46,6 +46,6 @@ status_stream_with_lag as (
   select *, lag(host_status) over (partition by host order by scanned_at) as previous_status from status_stream
 )
 select scanned_at, host, host_status from status_stream_with_lag
-  where host_status != previous_status
+  where previous_status is null or host_status != previous_status
   order by scanned_at
 ;
