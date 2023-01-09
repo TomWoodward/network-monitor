@@ -12,6 +12,6 @@ dir="$SCRIPT_DIR/../reports-collected/$year/$month/$day"
 mkdir -p "$dir"
 
 file="$dir/$(date +T%H-%M-%S%z).xml"
-nmap -R -oX "$file" -v0 -sn 10.0.0.* 8.8.8.8
+nmap -R -oX "$file" -v0 -sn 10.0.0.* 8.8.8.8 steamcommunity.com amazon.com openstax.org
 
 chmod -R a+rwx "$SCRIPT_DIR/../reports-collected"
